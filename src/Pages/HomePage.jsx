@@ -1,31 +1,26 @@
-import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import MainLayout from "../components/MainLayout";
+import { useQuery } from "@tanstack/react-query";
+import { fetchPokemons } from "../util/http";
 
 export default function HomePage() {
-  const [pokemons, setPokemons] = useState([]);
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["pokemons"],
+    queryFn: fetchPokemons,
+  });
 
-  useEffect(() => {
-    async function fetchPokemons() {
-      const response = await fetch(
-        "https://pokeapi.co/api/v2/pokemon?limit=50"
-      );
+  if (isLoading) {
+    return <p className="text-center mt-4">Loading...</p>;
+  }
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch pokemons");
-      }
+  if (isError) {
+    return <p className="text-center mt-4 text-red-500">{error.message}</p>;
+  }
 
-      const data = await response.json();
-
-      setPokemons(data.results);
-    }
-
-    fetchPokemons();
-  }, []);
   return (
     <>
       <Header />
-      <MainLayout pokemons={pokemons} />
+      <MainLayout pokemons={data} />
     </>
   );
 }
